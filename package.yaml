@@ -21,28 +21,21 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
-
-library:
-  source-dirs: src
+- aeson
+- yaml
+- time >= 1.9.1
+- filepath
+- classy-prelude
+- prettyprinter
+- containers
+- mono-traversable
+- optparse-applicative
 
 executables:
-  time-keeper-exe:
+  time-keeper:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
-    dependencies:
-    - time-keeper
-
-tests:
-  time-keeper-test:
-    main:                Spec.hs
-    source-dirs:         test
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - time-keeper
