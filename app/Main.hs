@@ -7,17 +7,13 @@
   , CPP #-}
 module Main where
 
-import ClassyPrelude
-import GHC.Generics
+import ClassyPrelude hiding (log)
 import Data.Time
-import Data.Time.Format
 import Data.Aeson (ToJSON(..), FromJSON(..), genericToEncoding, defaultOptions)
 import Data.Yaml (decodeThrow)
-import System.FilePath
-import Data.Text.Prettyprint.Doc
 import Data.Map (Map)
 import qualified Data.Map as M
-import Data.MonoTraversable
+import Data.MonoTraversable ()
 import Text.Printf
 import Options.Applicative
 
