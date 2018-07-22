@@ -1,3 +1,12 @@
+-- | Calculates time spent on a task given a log over intervals where
+-- you've been working.
+--
+-- The log must be in a @.yaml@ file following this format:
+--
+--     # Use `C-u M-! date -Iseconds` to insert the time
+--     - from: 2018-07-22T11:00:00+02:00
+--       to:   2018-07-22T16:24:16+02:00
+--     # 5.5 hrs
 {-# language DeriveGeneric
   , NoImplicitPrelude
   , TypeApplications
@@ -42,36 +51,57 @@ data Summary = Summary
   , totalTime   :: NominalDiffTime
   }
 
+-- | Parse a log and write out total time.
 main :: IO ()
 main = do
-  path <- execParser fileI
+  path <- execParser logPathInfo
   log <- getLog path
+  printLog log
+
+printEntry :: Entry -> IO ()
+printEntry (Entry a b) = do
+  printf "Worked from %s to %s\n" (frmt a) (frmt b)
+  where
+    frmt = formatTime defaultTimeLocale (iso8601DateFormat (Just "%H:%M:%S"))
+
+printLog :: Log -> IO ()
+printLog log = do
+  omapM_ printEntry log
   frmTime . getTotalTime $ log
 
+-- | Human readable output format.
 frmTime :: FormatTime t => PrintfType r => t -> r
 frmTime s = printf "Time spent: %s\n" (formatTimeHMS s)
 
+-- | Get hours, minutes and seconds.
 formatTimeHMS :: FormatTime t => t -> String
 formatTimeHMS = formatTime defaultTimeLocale "%H:%M:%S"
 
+-- | Calculate total time from log.
 getTotalTime :: Log -> NominalDiffTime
 getTotalTime = ofoldl' step 0
   where
   step :: NominalDiffTime -> Entry -> NominalDiffTime
   step t (Entry s e) = t + (e `diffUTCTime` s)
 
+-- | Read and decode log.
 getLog :: FilePath -> IO Log
 getLog = readFile >=> decodeThrow @IO @Log
 
-file :: FilePath
-file = "./worklog.yaml"
+
+-- * Command line options
 
-fileP :: Parser FilePath
-fileP = strArgument @FilePath (metavar "LOG" <> help "Path to the log file" <> value file)
+-- | Default path to log file.
+defaultLogPath :: FilePath
+defaultLogPath = "./worklog.yaml"
 
-fileI :: ParserInfo FilePath
-fileI = info
-  (helper <*> fileP)
+-- | Option parser for log file.
+logPathP :: Parser FilePath
+logPathP = strArgument @FilePath (metavar "LOG" <> help "Path to the log file" <> value defaultLogPath)
+
+logPathInfo :: ParserInfo FilePath
+logPathInfo = info
+  (helper <*> logPathP)
   (  fullDesc
   <> progDesc "Keeps Track of your time"
   <> header "time-keeper"
