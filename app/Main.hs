@@ -60,7 +60,7 @@ main = do
 
 printEntry :: Entry -> IO ()
 printEntry (Entry a b) = do
-  printf "Worked from %s to %s\n" (frmt a) (frmt b)
+  printf "Worked from %s to %s (%s)\n" (frmt a) (frmt b) (formatTimeHMS (b `diffUTCTime` a))
   where
     frmt = formatTime defaultTimeLocale (iso8601DateFormat (Just "%H:%M:%S"))
 
